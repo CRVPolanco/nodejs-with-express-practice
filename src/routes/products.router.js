@@ -26,20 +26,47 @@ productsRouter.get('/filter', (req, res) => {
 productsRouter.get('/:id', (req, res) => {
   const { id } = req.params;
 
-  res.json({
-    id,
-    name: `Product ${id}`,
-    price: 29.99
-  })
+
+
+  if(id === '696'){
+    console.log('Entro en el error');
+    res.status(404).json({
+      message: 'not found',
+    });
+  }else{
+    res.status(200).json({
+      id,
+      name: 'prueba',
+      price: 1499.99
+    })
+  }
+
 });
 productsRouter.post('/', (req, res) => {
   const body = req.body;
 
-  res.json({
+  res.status(201).json({
     message: 'created',
     data: body
   });
 
 })
+productsRouter.patch('/:id', (req, res) => {
+  const { id } = req.params
+  const body = req.body;
+
+  res.json({
+    message: 'created',
+    data: body,
+    id,
+  });
+});
+productsRouter.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  res.json({
+    message: 'product deleted',
+    id,
+  });
+});
 
 module.exports = productsRouter;
