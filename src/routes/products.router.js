@@ -6,9 +6,8 @@ const productsRouter = express.Router();
 
 productsRouter.get('/', (req, res) => {
 
-
-
   res.json(service.find());
+
 });
 
 productsRouter.get('/filter', (req, res) => {

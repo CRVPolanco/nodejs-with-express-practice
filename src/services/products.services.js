@@ -11,14 +11,15 @@ class ProductService{
 
     const limit = 100;
 
-    for(let i=0; i<limit; i++){
-      this.products.push({
-        name: faker.commerce.productName(),
-        price: parseInt(faker.commerce.price(), 10),
-        image: faker.image.imageUrl(),
-        id: faker.datatype.uuid(),
-      });
-    }
+      for(let i=0; i<limit; i++){
+        this.products.push({
+          name: faker.commerce.productName(),
+          price: parseInt(faker.commerce.price(), 10),
+          image: faker.image.imageUrl(),
+          description: faker.commerce.productDescription(),
+          id: faker.datatype.uuid(),
+        });
+      }
 
     }
     create(){
