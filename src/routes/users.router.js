@@ -1,73 +1,64 @@
 const express = require('express');
+const { validatorHandler } = require('../middlewares/validator.handler');
+const { getUserSchema, createUserSchema, updateUserSchema } = require('../schemas/users.schema');
 const UserService = require('../services/users.service');
 const usersRouter = express.Router();
 const service = new UserService();
 
-usersRouter.get('/', (req, res) => {
+usersRouter.get('/', async (req, res) => {
 
-  res.status(200).json(service.find());
-
+  const getUsers = await service.find();
+  res.json(getUsers);
 });
-usersRouter.get('/:id', (req, res) => {
 
-  const { id } = req.params;
+usersRouter.get('/:id', validatorHandler(getUserSchema, 'params'), async(req, res, next) => {
+  try{
+    const { id } = req.params;
+    const getUser = await service.findUser(id);
 
-  const getUser = service.findUser(id);
-
-  if(!!getUser){
     res.status(200).json(getUser);
-  }else{
-    res.status(404).json({ message: "User not found" });
+  } catch(err) {
+
+    next(err);
   }
-
 });
-usersRouter.post('/', (req, res) => {
 
-  const body = req.body;
-
-  if(!!body){
-
-    const createdId = service.createUser(body);
+usersRouter.post('/', validatorHandler(createUserSchema, 'body'), async(req, res, next) => {
+  try {
+    const body = req.body;
+    const createdId = await service.createUser(body);
 
     res.status(201).json({
       message: "Created succefully",
       id: createdId,
     });
+  } catch (error) {
+    next(error);
   }
-
-});
-usersRouter.patch('/:id', (req, res) => {
-
-  const { id } = req.params;
-  const data = req.body;
-
-  const findUser = service.findUser(id);
-
-  if(!!findUser){
-    const newData = service.update(findUser, data);
-
-    res.status(202).json({
-      message: 'User updated',
-      user: newData
-    });
-  }
-
 });
 
-usersRouter.delete('/:id', (req, res) => {
+usersRouter.patch('/:id', validatorHandler(getUserSchema, 'params'), validatorHandler(updateUserSchema, 'body'),
+ async(req, res, next) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
 
-  const { id } = req.params;
+    const newData = await service.update(id, data);
 
-  const userExists = service.find().some(u => u.id);
+    res.status(202).json({ id, ...newData });
+  } catch (error) {
+    next(error);
+  }
+});
 
-  if(!!userExists){
+usersRouter.delete('/:id', validatorHandler(getUserSchema, 'params'), async(req, res, next) => {
+  try{
+    const { id } = req.params;
+    const deletedId = await service.delete(id);
 
-    service.delete(id);
-
-    res.status(203).json({
-      message: 'Deleted user',
-      id
-    })
+    res.status(203).json({ message: 'User deleted', id: deletedId.id });
+  }catch(error){
+    next(error);
   }
 })
 

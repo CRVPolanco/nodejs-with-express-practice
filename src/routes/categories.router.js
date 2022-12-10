@@ -1,75 +1,63 @@
 const express = require('express');
+const { getCategorySchema, createCategorySchema, updateCategorySchema } = require('../schemas/categories.schema');
 const CategorieService = require('../services/categories.services');
 const categoriesRouter = express.Router();
 const service = new CategorieService();
+const validatorHandler = require('../middlewares/validator.handler');
 
-categoriesRouter.get('/:id/products/:productId', (req, res) => {
-  const { id, productId } = req.params;
-  res.json({
-    id,
-    productId,
-  })
-});
-categoriesRouter.get('/:id', (req, res) => {
-  const { id } = req.params;
+categoriesRouter.get('/', async(req, res, next) => {
 
-  const findCategory = service.findCategory(id);
+  const getAll = await service.find();
+  res.status(200).json(getAll);
 
-  if(!!findCategory){
+})
+categoriesRouter.get('/:id', validatorHandler(getCategorySchema, 'params'), async(req, res, next) => {
+  try{
+
+    const { id } = req.params;
+    const findCategory = await service.findCategory(id);
+
     res.status(200).json(findCategory);
-  }else{
-    res.status(404).json({ message: 'category not found', id });
-  }
 
-})
-categoriesRouter.post('/', (req, res) => {
-  const body = req.body;
-
-  const newCategory = service.createCategory(body);
-
-  if(!!newCategory){
-    res.status(201).json({
-      message: 'Created succefully',
-      id: newCategory,
-    })
+  }catch(err){
+    next(err);
   }
 })
-categoriesRouter.patch('/:id', (req, res) => {
+categoriesRouter.post('/', validatorHandler(createCategorySchema, 'body'), async(req, res, next) => {
+  try{
+    const body = req.body;
+    const category = await service.createCategory(body);
 
-  const { id } = req.params;
-  const body = req.body;
+    res.status(201).json({ id: category.id, message: 'created category' })
+  }catch(err){
+    next(err);
+  }
+})
+categoriesRouter.patch('/:id', validatorHandler(getCategorySchema, 'params'), validatorHandler(updateCategorySchema, 'body'), async(req, res, next) => {
+  try{
 
-  const findCategory = service.findCategory(id);
-  const updatedProduct = service.updateCategory(findCategory, body);
+    const { id } = req.params;
+    const body = req.body;
 
-  if(!!updatedProduct){
+    const updated = await service.updateCategory(id, body);
 
-    res.status(202).json({
-      message: 'category updated!',
-      id
-    })
-  }else{
-    res.status(404).json({
-      message: 'category not found',
-      id
-    })
+    res.status(202).json(updated)
+
+  }catch(err){
+    next(err);
   }
 });
-categoriesRouter.delete('/:id', (req, res) => {
+categoriesRouter.delete('/:id', validatorHandler(getCategorySchema, 'params'), async(req, res, next) => {
+  try{
 
-  const { id } = req.params;
-  const isDeleted = service.deleteCategory(id);
+    const { id } = req.params;
 
-  if(!!isDeleted){
-    res.status(203).json({
-      message: 'Category deleted succefully!',
-      id
-    });
-  }else{
-    res.status(404).json({
-      message: 'category does not exist',
-      id
-    });
+    const deleted = await service.deleteCategory(id);
+
+    res.status(203).json({ message: 'deleted succefully', id: deleted.id });
+
+  }catch(err){
+    next(err);
   }
 });
 

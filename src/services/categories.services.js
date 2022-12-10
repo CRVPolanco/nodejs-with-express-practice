@@ -1,4 +1,5 @@
 const faker = require('faker');
+const boom = require('@hapi/boom');
 
 class CategorieService {
 
@@ -13,42 +14,59 @@ class CategorieService {
             id: faker.datatype.uuid(),
         })
     }
-    categories(){
-        return this.categories;
+    async find(){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(this.categories);
+            }, 200)
+        })
     }
-    findCategory(id){
+    async findCategory(id){
 
-        const findProduct = this.categories.find(c => c.id === id);
-        return findProduct;
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              const findCategory = this.categories.findIndex(c => c.id === id);
+              if(!findCategory) throw boom.notFound('Category not found');
+              resolve(this.categories[findCategory]);
+            }, 200)
+        })
     }
-    createCategory(body){
+    async createCategory(body){
 
-        const id = faker.random.uuid();
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              const id = faker.random.uuid();
+              this.categories.push({
+                  body,
+                  id,
+              });
+              resolve({ id });
+            }, 200)
+        })
+    }
+    async updateCategory(id, data){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const findIndex = this.categories.findIndex(c => c.id === id);
+                if(findIndex === -1) throw boom.notFound('Category not found');
 
-        this.categories.push({
-            body,
-            id,
+                this.categories[findIndex] = { ...this.categories[findIndex], ...data };
+                resolve(this.categories[findIndex]);
+            }, 200)
         });
-        return id;
     }
-    updateCategory(actual, next){
+    async deleteCategory(id){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
 
-        const copyCategoriesArray = [...this.categories];
-        const newObject = { ...actual, ...next };
+                const findIndex = this.categories.findIndex(c => c.id === id);
+                if(findIndex === -1) throw boom.notFound('Category not found');
 
-        copyCategoriesArray.push(newObject);
-        this.categories = copyCategoriesArray;
-
-        return true;
-
-    }
-    deleteCategory(id){
-
-        const filterArray = this.categories.filter(c => c.id === id);
-        this.categories = filterArray
-
-        return true;
-    }
+                this.categories = this.categories.splice(findIndex, 1);
+                resolve({ id });
+            }, 200)
+        });
+    };
 
 }
 

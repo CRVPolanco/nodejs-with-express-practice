@@ -27,10 +27,14 @@ class ProductService{
     async create(data){
 
       const id = faker.datatype.uuid();
+      const image = faker.image.imageUrl();
+      const isBlocked = faker.datatype.boolean();
 
       this.products.push({
+        id,
+        image,
+        isBlocked,
         ...data,
-        id
       })
     }
     async find(){

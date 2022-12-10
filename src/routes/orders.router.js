@@ -1,72 +1,61 @@
 const express = require('express');
+const { getOrderSchema, createOrderSchema, updateOrderSchema } = require('../schemas/orders.schema');
 const OrderService = require('../services/orders.services');
+const validatorHandler = require('../middlewares/validator.handler');
 const ordersRouter = express.Router();
 const service = new OrderService();
 
-ordersRouter.get('/:id', (req, res) => {
+ordersRouter.get('/:id', validatorHandler(getOrderSchema, 'params'), async(req, res, next) => {
+    try {
+      const { id } = req.params;
+      const findOrder = await service.findOrder(id);
 
-    const { id } = req.params;
+      res.status(200).json(findOrder);
+    } catch (error) {
+        next(error);
+    }
+});
 
-    const findOrder = service.findOrder(id);
+ordersRouter.post('/', validatorHandler(createOrderSchema, 'body'), async(req, res, next) => {
 
-    if(!!findOrder){
+    try{
+      const body = req.body;
+      const id = service.createOrder(body);
 
-        res.status(200).json(findOrder);
-        return;
+      res.status(201).json({
+          message: 'order created succefully',
+          id,
+      });
+    }catch(err){
+        next(err);
     }
 
-    res.status(404).json({
-        message: 'Resource not found'
-    });
 
 });
-ordersRouter.post('/', (req, res) => {
 
-    const body = req.body;
+ordersRouter.patch('/:id', validatorHandler(getOrderSchema, 'params'), validatorHandler(updateOrderSchema, 'body'), async(req, res, next) => {
+    try{
+        const { id } = req.params;
+        const body = req.body;
 
-    const id = service.createOrder(body);
+        const order = await service.updateOrder(id, body);
 
-    res.status(201).json({
-        message: 'order created succefully',
-        id,
-    });
-})
-ordersRouter.patch('/:id', (req, res) => {
-    const { id } = req.params;
-    const body = req.body;
-
-    const getOrder = service.findOrder(id);
-
-    if(!!getOrder){
-        const updatedOrder = service.updateOrder(getOrder, body);
-
-        res.status(202).json({
-            message: 'Order updated',
-            id,
-            order: updatedOrder,
-        });
-    }else{
-        res.status(404).json({
-            message: 'order not found',
-            id,
-        });
+        res.status(202).json(order);
+    }catch(err){
+        next(err);
     }
-})
-ordersRouter.delete('/:id', (req, res) => {
-    const { id } = req.params;
+});
 
-    const deletedOrder = service.deleteOrder(id);
+ordersRouter.delete('/:id', validatorHandler(getOrderSchema, 'params'), async(req, res, next) => {
+    try{
+        const { id } = req.params;
 
-    if(!!deletedOrder){
-        res.status(203).json({
-            message: 'order deleted',
-            id,
-        });
-    }else{
-        res.status(404).json({
-            message: 'order not found',
-            id,
-        })
+        const deletedId = await service.deleteOrder(id);
+
+        res.json({ message: 'Order deleted', id: deletedId });
+    }catch(err){
+        next(err);
     }
-})
+});
+
 module.exports = ordersRouter;

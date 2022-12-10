@@ -1,4 +1,5 @@
 const faker = require('faker');
+const boom = require('@hapi/boom');
 
 class OrderService {
 
@@ -7,55 +8,82 @@ class OrderService {
     }
 
     generateOrder(){
+
       const products = [];
-      for(let i=0; i<4; i++){
+      for(let i=0; i<10; i++){
+        if(!!faker.random.boolean()){
           products.push(faker.commerce.productName());
+        }
       }
+
       this.orders.push({
+        id: faker.random.uuid,
         customer_who_has_ordered: `${faker.name.firstName()} ${faker.name.lastName()}`,
         money_expensed: faker.finance.amount(),
         bought_date: faker.date.past(),
         products_ordered: [
             ...products
         ],
-        status: !!faker.random.boolean() ? 'Completed' : 'Pending',
-        id: faker.random.uuid,
+        isCompleted: faker.random.boolean(),
       });
     }
 
-    findOrder(id){
-      const findIndex = this.orders.find(o => o.id === id);
-      return this.orders[findIndex];
+    async findOrder(id){
+
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+
+          const findOrder = this.orders.findIndex(o => o.id === id);
+          if(!findOrder) throw boom.notFound('Order not found');
+          resolve(this.orders[findOrder]);
+
+        }, 150);
+      });
     }
-    createOrder(body){
 
-      const newId = faker.random.uuid;
+    async createOrder(body){
 
-      this.orders.push({
-        customer_who_has_ordered: body.customer_who_has_ordered ?? '',
-        money_expensed: body.money_expensed ?? '0',
-        bought_date: body.bought_date ?? 'dd/mm/aa',
-        products_ordered: body.products_ordered ?? [],
-        status: 'Pending',
-        id: newId,
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+
+          const newId = faker.datatype.uuid();
+
+          this.orders({
+            id: newId,
+            ...body,
+            isCompleted: false,
+          });
+
+          resolve(newId);
+        }, 300);
+      });
+    }
+
+    async updateOrder(id, newOrderData){
+
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+
+          const findIndex = this.orders.findIndex(o => o.id === id);
+          if(findIndex === -1) throw boom.notFound('Order not found');
+
+          this.orders[findIndex] = { ...this.orders[findIndex], ...newOrderData };
+          resolve(this.orders[findIndex]);
+        }, 300);
       })
-
-      return newId;
     }
-    updateOrder(order, newOrderData){
 
-      const copyArray = this.orders.filter(o => o.id !== order.id);
-      const orderUpdatedObject = { ...order, ...newOrderData };
+    async deleteOrder(id){
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
 
-      copyArray.push(orderUpdatedObject);
-      return orderUpdatedObject;
-    }
-    deleteOrder(id){
-      const copyArray = [...this.orders];
-      const filter = copyArray.filter(o => o.id !== id);
+          const findIndex = this.orders.findIndex(o => o.id === id);
+          if(findIndex === -1) throw boom.notFound('Order not found');
 
-      this.orders = filter;
-      return true;
+          this.orders = this.orders.splice(findIndex, 1);
+          resolve({ id });
+        }, 250)
+      })
     }
 
 }

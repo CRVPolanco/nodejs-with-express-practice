@@ -1,4 +1,5 @@
 const faker = require('faker');
+const boom = require('@hapi/boom');
 
 class UserService{
 
@@ -22,44 +23,59 @@ class UserService{
             });
         };
     }
-    find(){
-        return this.users;
+    async find(){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                resolve(this.users);
+            }, 150)
+        })
     }
-    findUser(id){
-        return this.users.find(u => u.id === Number(id));
+    async findUser(id){
+        return new Promise((resolve, reject) =>{
+            setTimeout(() => {
+                const findUser = this.users.find(u => u.id === id);
+                if(!findUser) throw boom.notFound('User not found');
+
+                resolve(findUser);
+            }, 150);
+        })
+
     }
-    createUser(user){
-
-        const newId = this.users.length + 1;
-
-        this.users.push({
-            name: user.name ?? '',
-            username: user.username ?? '',
-            email: user.email ?? '',
-            address: user.address ?? '',
-            date: user.date ?? '',
-            id: newId,
-        });
-
-        return newId;
+    async createUser(data){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const newId = this.users.length + 1;
+                this.users.push({
+                  ...data,
+                  id: newId,
+                });
+                resolve(newId);
+            }, 250);
+        })
     };
-    update(user, userUpd){
+    async update(id, dataUpdated){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
 
-        const copyArray = this.users.filter(u => u.id !== user.id);
-        const userUpdatedObject = { ...user, ...userUpd };
+              const findIndex = this.users.findIndex(u => u.id === id);
+              if(!findIndex) throw boom.notFound('User not found');
+              this.users[findIndex] = { ...this.users[findIndex], ...dataUpdated };
 
-        copyArray.push(userUpdatedObject);
-
-        this.users = copyArray.sort((a, b) => a.id - b.id);
-
-        return userUpdatedObject;
+              resolve(this.users[findIndex]);
+            }, 300)
+        })
     }
-    delete(id){
+    async delete(id){
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
 
-        const copyArray = [...this.users];
-        const filter = copyArray.filter(u => u.id !== Number(id));
+              const findIndex = this.users.findIndex(u => u.id === id);
+              if(!findIndex) throw boom.notFound('User not found');
+              this.users = this.users.splice(findIndex, 1);
 
-        this.users = filter;
+              resolve({ id });
+            }, 200);
+        })
     }
 
 }
