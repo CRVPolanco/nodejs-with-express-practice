@@ -10,7 +10,7 @@ class CategorieService {
     generateCategories(){
         this.categories.push({
             categoryName: faker.commerce.productMaterial(),
-            id: faker.random.uuid(),
+            id: faker.datatype.uuid(),
         })
     }
     categories(){
@@ -29,7 +29,6 @@ class CategorieService {
             body,
             id,
         });
-
         return id;
     }
     updateCategory(actual, next){

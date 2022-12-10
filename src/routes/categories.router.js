@@ -10,6 +10,18 @@ categoriesRouter.get('/:id/products/:productId', (req, res) => {
     productId,
   })
 });
+categoriesRouter.get('/:id', (req, res) => {
+  const { id } = req.params;
+
+  const findCategory = service.findCategory(id);
+
+  if(!!findCategory){
+    res.status(200).json(findCategory);
+  }else{
+    res.status(404).json({ message: 'category not found', id });
+  }
+
+})
 categoriesRouter.post('/', (req, res) => {
   const body = req.body;
 

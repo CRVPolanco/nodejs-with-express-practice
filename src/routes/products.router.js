@@ -4,26 +4,23 @@ const service = new ProductService();
 
 const productsRouter = express.Router();
 
-productsRouter.get('/', (req, res) => {
+productsRouter.get('/', async (req, res) => {
 
   res.json(service.find());
 
 });
 
-productsRouter.get('/filter', (req, res) => {
-  res.send('Soy un filtro, y al estar antes del products/:id yo soy específico y el otro es dinámico')
-});
-
-productsRouter.get('/:id', (req, res) => {
-
-  const { id } = req.params;
-
-  const findOneProduct = service.findOne(id);
-
-  !!findOneProduct ? res.status(200).json(findOneProduct) : res.status(404).json({ message: 'resource not found' });
+productsRouter.get('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const findOneProduct = await service.findOne(id);
+    res.status(200).json({ id, findOneProduct });
+  } catch (error) {
+    next(error)
+  }
 
 });
-productsRouter.post('/', (req, res) => {
+productsRouter.post('/', async (req, res) => {
   const body = req.body;
 
   res.status(201).json({
@@ -32,21 +29,33 @@ productsRouter.post('/', (req, res) => {
   });
 
 })
-productsRouter.patch('/:id', (req, res) => {
-  const { id } = req.params
-  const body = req.body;
+productsRouter.patch('/:id', async (req, res) => {
+
+  try{
+    const { id } = req.params
+    const body = req.body;
+
+    const findProduct = await service.update(id, body);
+
+    res.status(202).json({
+      id,
+      productUpdated: findProduct
+    })
+  }catch(err){
+    res.status(404).json({
+      message: 'product not found',
+      error: err.message
+    })
+  }
+});
+productsRouter.delete('/:id', async (req, res) => {
+
+  const { id } = req.params;
+  const productDeleted = await service.delete(id);
 
   res.json({
-    message: 'created',
-    data: body,
-    id,
-  });
-});
-productsRouter.delete('/:id', (req, res) => {
-  const { id } = req.params;
-  res.json({
     message: 'product deleted',
-    id,
+    id: productDeleted.id,
   });
 });
 

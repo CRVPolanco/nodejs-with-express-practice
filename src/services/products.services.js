@@ -22,22 +22,42 @@ class ProductService{
       }
 
     }
-    create(){
+    async create(data){
+
+      const id = faker.datatype.uuid();
+
+      this.products.push({
+        ...data,
+        id
+      })
+    }
+    async find(){
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(this.products);
+        }, 1250)
+      })
+    }
+    async findOne(id){
+      const name = this.getOne();
+      return this.products.find(p => p.id === id);
+    }
+    async update(id, after){
+
+      const indexProduct = copyArray.findIndex(p => p.id === id);
+
+      if(!indexProduct) throw new Error('Product not found');
+
+      this.products[indexProduct] = { ...this.products[indexProduct], ...after };
+      return this.products[indexProduct];
 
     }
-    find(){
+    async delete(id){
 
-        return this.products;
-    }
-    findOne(id){
-        const findProduct = this.products.find(p => p.id === id);
-        return findProduct;
-    }
-    update(){
+      const indexArray = this.products.findIndex(p => p.id === id);
+      this.products.splice(indexArray, 1);
 
-
-    }
-    delete(){
+      return { id };
 
     }
 
