@@ -1,4 +1,5 @@
 const faker = require('faker');
+const boom = require('@hapi/boom');
 
 class ProductService{
 
@@ -13,11 +14,12 @@ class ProductService{
 
       for(let i=0; i<limit; i++){
         this.products.push({
+          id: faker.datatype.uuid(),
           name: faker.commerce.productName(),
           price: parseInt(faker.commerce.price(), 10),
           image: faker.image.imageUrl(),
           description: faker.commerce.productDescription(),
-          id: faker.datatype.uuid(),
+          isBlocked: faker.datatype.boolean(),
         });
       }
 
@@ -32,21 +34,28 @@ class ProductService{
       })
     }
     async find(){
+      console.log(this.products);
       return new Promise((resolve, reject) => {
         setTimeout(() => {
           resolve(this.products);
-        }, 1250)
+        }, 1250);
       })
     }
     async findOne(id){
-      const name = this.getOne();
-      return this.products.find(p => p.id === id);
+
+      const findProduct = this.products.find(p => p.id === id);
+
+      if(!findProduct) throw boom.notFound('Product not found');
+      if(findProduct.isBlocked) throw boom.conflict('Product is blocked');
+
+      return findProduct;
     }
     async update(id, after){
 
-      const indexProduct = copyArray.findIndex(p => p.id === id);
+      const indexProduct = this.products.findIndex(p => p.id === id);
+      console.log(indexProduct);
 
-      if(!indexProduct) throw new Error('Product not found');
+      if(indexProduct === -1) throw boom.notFound('Product not found');
 
       this.products[indexProduct] = { ...this.products[indexProduct], ...after };
       return this.products[indexProduct];
@@ -55,6 +64,9 @@ class ProductService{
     async delete(id){
 
       const indexArray = this.products.findIndex(p => p.id === id);
+
+      if(!indexArray) throw boom.notFound('Product selected to delete was not found')
+
       this.products.splice(indexArray, 1);
 
       return { id };

@@ -4,19 +4,29 @@ const service = new ProductService();
 
 const productsRouter = express.Router();
 
-productsRouter.get('/', async (req, res) => {
+productsRouter.get('/', async (req, res, err) => {
 
-  res.json(service.find());
+  try{
+
+    const products = await service.find();
+    res.json(products);
+
+  }catch(err){
+    next(err)
+  }
 
 });
 
 productsRouter.get('/:id', async (req, res, next) => {
   try {
+
     const { id } = req.params;
     const findOneProduct = await service.findOne(id);
-    res.status(200).json({ id, findOneProduct });
+
+    res.status(200).json(findOneProduct);
   } catch (error) {
-    next(error)
+
+    next(error);
   }
 
 });
@@ -29,23 +39,16 @@ productsRouter.post('/', async (req, res) => {
   });
 
 })
-productsRouter.patch('/:id', async (req, res) => {
+productsRouter.patch('/:id', async (req, res, next) => {
 
   try{
     const { id } = req.params
     const body = req.body;
-
     const findProduct = await service.update(id, body);
 
-    res.status(202).json({
-      id,
-      productUpdated: findProduct
-    })
+    res.status(202).json(findProduct);
   }catch(err){
-    res.status(404).json({
-      message: 'product not found',
-      error: err.message
-    })
+    next(err)
   }
 });
 productsRouter.delete('/:id', async (req, res) => {
