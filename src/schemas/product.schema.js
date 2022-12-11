@@ -21,7 +21,7 @@ const updateProductSchema = Joi.object({
     name: name,
     price: price,
     description: description,
-    uri: uri,
+    image: image,
 })
 
 module.exports = { getProductSchema, createProductSchema, updateProductSchema };

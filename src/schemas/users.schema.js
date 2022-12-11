@@ -5,7 +5,7 @@ const username = Joi.string().min(2).max(15);
 const email = Joi.string().email();
 const address = Joi.string().min(10).max(100);
 const date = Joi.string();
-const id = Joi.integer();
+const id = Joi.number().integer();
 
 const getUserSchema = Joi.object({
     id: id.required(),

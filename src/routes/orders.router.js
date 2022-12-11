@@ -1,7 +1,7 @@
 const express = require('express');
 const { getOrderSchema, createOrderSchema, updateOrderSchema } = require('../schemas/orders.schema');
 const OrderService = require('../services/orders.services');
-const validatorHandler = require('../middlewares/validator.handler');
+const { validatorHandler } = require('../middlewares/validator.handler');
 const ordersRouter = express.Router();
 const service = new OrderService();
 

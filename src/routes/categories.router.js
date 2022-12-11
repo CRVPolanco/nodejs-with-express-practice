@@ -3,7 +3,7 @@ const { getCategorySchema, createCategorySchema, updateCategorySchema } = requir
 const CategorieService = require('../services/categories.services');
 const categoriesRouter = express.Router();
 const service = new CategorieService();
-const validatorHandler = require('../middlewares/validator.handler');
+const { validatorHandler } = require('../middlewares/validator.handler');
 
 categoriesRouter.get('/', async(req, res, next) => {
 
